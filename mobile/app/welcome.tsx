@@ -1,18 +1,15 @@
 import { useEffect, useRef } from "react"
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  StatusBar,
-  Animated as RNAnimated,
-} from "react-native"
+import { View, StyleSheet, ScrollView, StatusBar, Animated as RNAnimated } from "react-native"
 import { router } from "expo-router"
 import { Screen, Text, Button } from "@/components"
 import { colors, semantic, spacing, borderRadius } from "@/constants/theme"
 
 const BENEFIT_CARDS = [
   { title: "Qualified leads", body: "Only serious customers who are ready to book." },
-  { title: "Payment held by Stripe", body: "You get paid when the job's done, not when they remember." },
+  {
+    title: "Payment held by Stripe",
+    body: "You get paid when the job's done, not when they remember.",
+  },
   { title: "Clear job scope", body: "Agree details and price upfront — fewer disputes." },
   { title: "Less chasing", body: "Focus on the work; we help with the rest." },
 ]
@@ -84,7 +81,7 @@ export default function WelcomeScreen() {
       ])
     )
     RNAnimated.stagger(0, staggered).start()
-  }, [])
+  }, [heroOpacity, heroTranslate, cardOpacity, cardTranslate, benefitAnims])
 
   return (
     <Screen padded={false} safeAreaColor={colors.primary}>

@@ -24,8 +24,6 @@
       },
       "package": "com.tradematch.app"
     },
-    "plugins": [
-      "expo-router"
-    ]
+    "plugins": ["expo-router"]
   }
 }

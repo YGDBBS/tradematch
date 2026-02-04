@@ -1,5 +1,6 @@
 import React from "react"
-import { View, StyleSheet, TouchableOpacity, ViewStyle } from "react-native"
+import type { ViewStyle } from "react-native"
+import { View, StyleSheet, TouchableOpacity } from "react-native"
 import { Card } from "./Card"
 import { Text } from "./Text"
 import { spacing, semantic, borderRadius } from "@/constants/theme"
@@ -49,10 +50,7 @@ export function ProfileCompletionCard({
               </Text>
             ) : null}
           </View>
-          <Text
-            variant="body"
-            style={[styles.label, item.completed && styles.labelDone]}
-          >
+          <Text variant="body" style={[styles.label, item.completed && styles.labelDone]}>
             {item.label}
           </Text>
         </TouchableOpacity>

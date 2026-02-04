@@ -1,12 +1,6 @@
 import React from "react"
-import {
-  Pressable,
-  Text,
-  View,
-  StyleSheet,
-  PressableProps,
-  ViewStyle,
-} from "react-native"
+import type { PressableProps, ViewStyle } from "react-native"
+import { Pressable, Text, StyleSheet } from "react-native"
 import { semantic, spacing, borderRadius, typography } from "@/constants/theme"
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive"
@@ -20,10 +14,7 @@ export interface ButtonProps extends Omit<PressableProps, "style"> {
   style?: ViewStyle
 }
 
-const variantStyles: Record<
-  ButtonVariant,
-  { container: ViewStyle; text: object }
-> = {
+const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: object }> = {
   primary: {
     container: {
       backgroundColor: semantic.buttonPrimary.bg,

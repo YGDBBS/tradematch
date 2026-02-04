@@ -1,5 +1,6 @@
 import React from "react"
-import { View, StyleSheet, ViewStyle } from "react-native"
+import type { ViewStyle } from "react-native"
+import { View, StyleSheet } from "react-native"
 import { Text } from "./Text"
 import { BackButton } from "./BackButton"
 import { spacing } from "@/constants/theme"
@@ -13,13 +14,7 @@ export interface HeaderProps {
 }
 
 /** Back (left) + title (centre) + optional right action. Use at top of screens. */
-export function Header({
-  title,
-  onBack,
-  backLabel = "Back",
-  rightAction,
-  style,
-}: HeaderProps) {
+export function Header({ title, onBack, backLabel = "Back", rightAction, style }: HeaderProps) {
   return (
     <View style={[styles.container, style]}>
       <View style={styles.left}>

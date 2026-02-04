@@ -7,11 +7,12 @@ export default function RootLayout() {
     <QueryProvider>
       <AuthProvider>
         <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="welcome" />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="signup" />
+          <Stack.Screen name="index" />
+          <Stack.Screen name="welcome" />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="signup" />
         </Stack>
       </AuthProvider>
     </QueryProvider>

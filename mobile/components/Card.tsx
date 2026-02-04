@@ -1,34 +1,30 @@
 import React from "react"
-import {
-  View,
-  Pressable,
-  StyleSheet,
-  ViewStyle,
-  ViewProps,
-} from "react-native"
+import type { ViewStyle } from "react-native"
+import { View, Pressable, StyleSheet } from "react-native"
 import { semantic, spacing, borderRadius } from "@/constants/theme"
 
-export interface CardProps extends ViewProps {
+export interface CardProps {
   children: React.ReactNode
   onPress?: () => void
   style?: ViewStyle
+  testID?: string
 }
 
 /** Base container: white surface, padding, optional shadow. Use for list items and content blocks. */
-export function Card({ children, onPress, style, ...rest }: CardProps) {
+export function Card({ children, onPress, style, testID }: CardProps) {
   if (onPress) {
     return (
       <Pressable
         onPress={onPress}
         style={({ pressed }) => [styles.card, pressed && styles.pressed, style]}
-        {...(rest as any)}
+        testID={testID}
       >
         {children}
       </Pressable>
     )
   }
   return (
-    <View style={[styles.card, style]} {...rest}>
+    <View style={[styles.card, style]} testID={testID}>
       {children}
     </View>
   )

@@ -24,9 +24,7 @@ export default function OnboardingContractorDetailsScreen() {
   const [businessType, setBusinessType] = useState<BusinessType | null>(
     profile?.business_type ?? null
   )
-  const [employeeCount, setEmployeeCount] = useState<number | null>(
-    profile?.employee_count ?? null
-  )
+  const [employeeCount, setEmployeeCount] = useState<number | null>(profile?.employee_count ?? null)
   const [isEmployer, setIsEmployer] = useState<boolean | null>(profile?.is_employer ?? null)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,7 +43,11 @@ export default function OnboardingContractorDetailsScreen() {
       return
     }
     try {
-      await updateProfile({ business_type: businessType, employee_count: employeeCount, is_employer: isEmployer })
+      await updateProfile({
+        business_type: businessType,
+        employee_count: employeeCount,
+        is_employer: isEmployer,
+      })
       router.replace("/onboarding/hello")
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")
@@ -70,10 +72,7 @@ export default function OnboardingContractorDetailsScreen() {
             <TouchableOpacity
               key={opt.value}
               onPress={() => setBusinessType(opt.value)}
-              style={[
-                styles.option,
-                businessType === opt.value && styles.optionSelected,
-              ]}
+              style={[styles.option, businessType === opt.value && styles.optionSelected]}
             >
               <Text
                 variant="body"
@@ -92,10 +91,7 @@ export default function OnboardingContractorDetailsScreen() {
             <TouchableOpacity
               key={opt.value}
               onPress={() => setEmployeeCount(opt.value)}
-              style={[
-                styles.option,
-                employeeCount === opt.value && styles.optionSelected,
-              ]}
+              style={[styles.option, employeeCount === opt.value && styles.optionSelected]}
             >
               <Text
                 variant="body"

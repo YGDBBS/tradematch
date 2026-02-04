@@ -44,6 +44,16 @@ export function ProfileBlock({ profile, onEdit, onSignOut }: ProfileBlockProps) 
             </Text>
           </>
         ) : null}
+        {profile.trade ? (
+          <>
+            <Text variant="label" style={styles.label}>
+              Trade / services
+            </Text>
+            <Text variant="body" style={styles.value}>
+              {profile.trade}
+            </Text>
+          </>
+        ) : null}
         {onEdit && (
           <Button
             title="Edit profile"

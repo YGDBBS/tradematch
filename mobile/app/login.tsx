@@ -1,5 +1,12 @@
 import { useState } from "react"
-import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native"
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native"
 import { router } from "expo-router"
 import { Screen, Text, Button } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
@@ -85,7 +92,10 @@ export default function LoginScreen() {
             style={styles.linkWrap}
           >
             <Text variant="bodySmall">
-              Don’t have an account? <Text variant="label" color="accent">Sign up</Text>
+              Don’t have an account?{" "}
+              <Text variant="label" color="accent">
+                Sign up
+              </Text>
             </Text>
           </TouchableOpacity>
         </View>

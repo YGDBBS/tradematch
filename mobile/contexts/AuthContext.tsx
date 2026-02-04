@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
-import { Session } from "@supabase/supabase-js"
+import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 
 interface AuthState {
@@ -24,11 +24,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState({ session: null, loading: false })
       return
     }
-    client.auth.getSession().then(({ data: { session } }) => {
-      setState({ session, loading: false })
-    }).catch(() => {
-      setState({ session: null, loading: false })
-    })
+    client.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setState({ session, loading: false })
+      })
+      .catch(() => {
+        setState({ session: null, loading: false })
+      })
 
     const {
       data: { subscription },

@@ -1,5 +1,6 @@
 import React from "react"
-import { Pressable, View, StyleSheet, PressableProps } from "react-native"
+import type { PressableProps } from "react-native"
+import { Pressable, View, StyleSheet } from "react-native"
 import { Text } from "./Text"
 import { colors, spacing } from "@/constants/theme"
 
@@ -21,7 +22,11 @@ export function BackButton({ onPress, label = "Back", ...rest }: BackButtonProps
       <View style={styles.chevron}>
         <Text style={styles.chevronText}>‹</Text>
       </View>
-      {label ? <Text variant="body" style={styles.label}>{label}</Text> : null}
+      {label ? (
+        <Text variant="body" style={styles.label}>
+          {label}
+        </Text>
+      ) : null}
     </Pressable>
   )
 }

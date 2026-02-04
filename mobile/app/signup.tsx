@@ -1,8 +1,16 @@
 import { useState } from "react"
-import { View, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native"
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native"
 import { router } from "expo-router"
 import { Screen, Text, Button } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
+import { validateEmail, validatePassword } from "@/lib/validation"
 import { semantic, spacing, borderRadius } from "@/constants/theme"
 
 export default function SignupScreen() {
@@ -14,12 +22,14 @@ export default function SignupScreen() {
 
   const handleSignUp = async () => {
     setError(null)
-    if (!email.trim() || !password) {
-      setError("Email and password are required")
+    const emailError = validateEmail(email)
+    if (emailError) {
+      setError(emailError)
       return
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters")
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
     setLoading(true)
@@ -89,7 +99,10 @@ export default function SignupScreen() {
             style={styles.linkWrap}
           >
             <Text variant="bodySmall">
-              Already have an account? <Text variant="label" color="accent">Sign in</Text>
+              Already have an account?{" "}
+              <Text variant="label" color="accent">
+                Sign in
+              </Text>
             </Text>
           </TouchableOpacity>
         </View>

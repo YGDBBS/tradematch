@@ -63,6 +63,9 @@ export const semantic = {
     border: colors.border,
     shadow: colors.shadow,
   },
+  surface: colors.surface,
+  border: colors.border,
+  textSecondary: colors.secondary,
 } as const
 
 export const spacing = {

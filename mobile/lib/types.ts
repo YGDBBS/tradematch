@@ -1,33 +1,12 @@
-/** Shared types for API responses and props. Mirror backend where needed. */
+/**
+ * Re-export shared types from the backend.
+ * This ensures a single source of truth for all types.
+ *
+ * When adding new types, add them to /lib/types/ (not here).
+ */
 
-export type ProfileRole = "customer" | "contractor"
+export type { Profile, ProfileRole, ProfileUpdate, BusinessType } from "../../lib/types/profile"
 
-export type BusinessType = "sole_trader" | "ltd"
+export type { Job, JobStatus, JobInsert, JobUpdate } from "../../lib/types/job"
 
-export interface Profile {
-  id: string
-  role: ProfileRole
-  display_name: string | null
-  phone: string | null
-  postcode: string | null
-  trade: string | null
-  radius_km: number | null
-  stripe_account_id: string | null
-  business_type: BusinessType | null
-  employee_count: number | null
-  is_employer: boolean | null
-  created_at: string
-  updated_at: string
-}
-
-export interface ProfileUpdate {
-  role?: ProfileRole
-  display_name?: string | null
-  phone?: string | null
-  postcode?: string | null
-  trade?: string | null
-  radius_km?: number | null
-  business_type?: BusinessType | null
-  employee_count?: number | null
-  is_employer?: boolean | null
-}
+export type { Customer, CustomerInsert, CustomerUpdate } from "../../lib/types/customer"
