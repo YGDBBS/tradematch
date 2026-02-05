@@ -1,111 +1,142 @@
 import { useState } from "react"
 import {
   View,
-  TextInput,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native"
 import { router } from "expo-router"
-import { Screen, Text, Button } from "@/components"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { Screen, Text, Button, Input } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
 import { validateEmail, validatePassword } from "@/lib/validation"
-import { semantic, spacing, borderRadius } from "@/constants/theme"
+import { spacing } from "@/constants/theme"
 
 export default function SignupScreen() {
+  const insets = useSafeAreaInsets()
   const { signUp } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [emailError, setEmailError] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [generalError, setGeneralError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleSignUp = async () => {
-    setError(null)
-    const emailError = validateEmail(email)
-    if (emailError) {
-      setError(emailError)
-      return
-    }
-    const passwordError = validatePassword(password)
-    if (passwordError) {
-      setError(passwordError)
-      return
-    }
+    setEmailError(null)
+    setPasswordError(null)
+    setGeneralError(null)
+
+    const emailErr = validateEmail(email)
+    const passwordErr = validatePassword(password)
+
+    if (emailErr) setEmailError(emailErr)
+    if (passwordErr) setPasswordError(passwordErr)
+    if (emailErr || passwordErr) return
+
     setLoading(true)
     const { error: err } = await signUp(email.trim(), password)
     setLoading(false)
+
     if (err) {
-      setError(err.message)
+      setGeneralError(err.message)
       return
     }
     router.replace("/onboarding/role")
   }
 
   return (
-    <Screen padded={false}>
+    <Screen>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
-        <View style={styles.form}>
-          <Text variant="title" style={styles.title}>
-            Create account
-          </Text>
-          <Text variant="bodySmall" style={styles.subtitle}>
-            Join TradeMatch – qualified leads, payment held by Stripe.
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={semantic.input.placeholder}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            editable={!loading}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password (min 6 characters)"
-            placeholderTextColor={semantic.input.placeholder}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="new-password"
-            editable={!loading}
-          />
-
-          {error ? (
-            <Text variant="bodySmall" style={styles.error}>
-              {error}
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + spacing.xxl }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text variant="hero" style={styles.title}>
+              Create account
             </Text>
-          ) : null}
+            <Text variant="body" color="muted">
+              Join TradeMatch and start getting quality leads
+            </Text>
+          </View>
 
-          <Button
-            title={loading ? "Creating account…" : "Sign up"}
-            onPress={handleSignUp}
-            disabled={loading}
-            fullWidth
-            style={styles.button}
-          />
+          {/* Form */}
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text)
+                setEmailError(null)
+              }}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              editable={!loading}
+              error={emailError || undefined}
+            />
 
-          <TouchableOpacity
-            onPress={() => router.back()}
-            disabled={loading}
-            style={styles.linkWrap}
-          >
-            <Text variant="bodySmall">
-              Already have an account?{" "}
-              <Text variant="label" color="accent">
+            <Input
+              label="Password"
+              placeholder="Min 6 characters"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text)
+                setPasswordError(null)
+              }}
+              secureTextEntry
+              autoComplete="new-password"
+              editable={!loading}
+              error={passwordError || undefined}
+              helper="At least 6 characters"
+            />
+
+            {generalError ? (
+              <Text variant="bodySmall" color="error" style={styles.error}>
+                {generalError}
+              </Text>
+            ) : null}
+
+            <Button
+              title={loading ? "Creating account…" : "Create account"}
+              onPress={handleSignUp}
+              disabled={loading}
+              fullWidth
+              style={styles.button}
+            />
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text variant="body" color="muted">
+              Already have an account?
+            </Text>
+            <Pressable
+              onPress={() => router.back()}
+              disabled={loading}
+              style={({ pressed }) => pressed && styles.pressed}
+            >
+              <Text variant="bodyStrong" color="accent" style={styles.linkText}>
                 Sign in
               </Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
+            </Pressable>
+          </View>
+
+          {/* Terms */}
+          <Text variant="small" color="muted" align="center" style={styles.terms}>
+            By creating an account, you agree to our Terms of Service and Privacy Policy
+          </Text>
+        </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
   )
@@ -114,38 +145,41 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
   },
-  form: {
-    width: "100%",
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  header: {
+    marginBottom: spacing.xl,
   },
   title: {
     marginBottom: spacing.xs,
   },
-  subtitle: {
-    marginBottom: spacing.lg,
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: semantic.input.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    fontSize: 16,
-    color: semantic.input.text,
-    backgroundColor: semantic.input.bg,
+  form: {
+    marginBottom: spacing.xl,
   },
   error: {
-    color: semantic.error,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   button: {
     marginTop: spacing.sm,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.xs,
     marginBottom: spacing.lg,
   },
-  linkWrap: {
-    alignSelf: "center",
+  linkText: {
+    paddingVertical: spacing.xs,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  terms: {
+    paddingHorizontal: spacing.lg,
   },
 })

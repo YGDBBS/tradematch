@@ -21,7 +21,7 @@ function formatCurrency(amount: number): string {
 function QuoteRow({ quote, onPress }: { quote: Quote; onPress: () => void }) {
   const statusColors: Record<string, string> = {
     draft: semantic.textSecondary,
-    sent: colors.accent,
+    sent: colors.teal,
     accepted: semantic.success,
     declined: semantic.error,
   }

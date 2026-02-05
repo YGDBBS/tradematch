@@ -97,7 +97,7 @@ export default function QuoteDetailScreen() {
   const statusColor = quote
     ? {
         draft: semantic.textSecondary,
-        sent: colors.accent,
+        sent: colors.teal,
         accepted: semantic.success,
         declined: semantic.error,
       }[quote.status]

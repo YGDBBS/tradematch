@@ -4,6 +4,7 @@ import { endpoints } from "@/lib/endpoints"
 import type { Quote, QuoteStatus, QuoteLineItem } from "@/lib/types"
 
 export const quotesQueryKey = (jobId: string) => ["quotes", jobId] as const
+export const allQuotesQueryKey = ["financials", "all-quotes"] as const
 
 interface QuoteCreateInput {
   job_id: string
@@ -37,6 +38,7 @@ export function useQuotes(jobId: string | undefined, accessToken: string | undef
       if (jobId) {
         queryClient.invalidateQueries({ queryKey: quotesQueryKey(jobId) })
       }
+      queryClient.invalidateQueries({ queryKey: allQuotesQueryKey })
     },
   })
 
@@ -47,6 +49,7 @@ export function useQuotes(jobId: string | undefined, accessToken: string | undef
       if (jobId) {
         queryClient.invalidateQueries({ queryKey: quotesQueryKey(jobId) })
       }
+      queryClient.invalidateQueries({ queryKey: allQuotesQueryKey })
     },
   })
 
@@ -56,6 +59,7 @@ export function useQuotes(jobId: string | undefined, accessToken: string | undef
       if (jobId) {
         queryClient.invalidateQueries({ queryKey: quotesQueryKey(jobId) })
       }
+      queryClient.invalidateQueries({ queryKey: allQuotesQueryKey })
     },
   })
 
@@ -90,8 +94,9 @@ export function useQuote(id: string | undefined, accessToken: string | undefined
       api.patch<Quote>(endpoints.quotes.get(id!), input, accessToken!),
     onSuccess: (data) => {
       queryClient.setQueryData(["quote", data.id], data)
-      // Invalidate the quotes list for this job
+      // Invalidate the quotes list for this job and the financials
       queryClient.invalidateQueries({ queryKey: quotesQueryKey(data.job_id) })
+      queryClient.invalidateQueries({ queryKey: allQuotesQueryKey })
     },
   })
 
@@ -99,6 +104,7 @@ export function useQuote(id: string | undefined, accessToken: string | undefined
     mutationFn: () => api.delete(endpoints.quotes.get(id!), accessToken!),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ["quote", id] })
+      queryClient.invalidateQueries({ queryKey: allQuotesQueryKey })
     },
   })
 

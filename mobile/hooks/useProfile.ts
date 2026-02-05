@@ -25,6 +25,7 @@ export function useProfile(accessToken: string | undefined) {
   return {
     profile: accessToken ? (query.data ?? null) : null,
     loading: query.isLoading,
+    refreshing: query.isFetching && !query.isLoading,
     error: (query.error ?? mutation.error) as Error | null,
     refetch: query.refetch,
     updateProfile: mutation.mutateAsync,

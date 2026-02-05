@@ -1,9 +1,10 @@
 import React from "react"
-import type { PressableProps, ViewStyle } from "react-native"
+import type { PressableProps, ViewStyle, TextStyle } from "react-native"
 import { Pressable, Text, StyleSheet } from "react-native"
 import { semantic, spacing, borderRadius, typography } from "@/constants/theme"
+import { useFontContext } from "@/contexts/FontContext"
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive"
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive" | "highlight"
 
 export interface ButtonProps extends Omit<PressableProps, "style"> {
   variant?: ButtonVariant
@@ -14,15 +15,13 @@ export interface ButtonProps extends Omit<PressableProps, "style"> {
   style?: ViewStyle
 }
 
-const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: object }> = {
+const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: TextStyle }> = {
   primary: {
     container: {
       backgroundColor: semantic.buttonPrimary.bg,
     },
     text: {
-      ...typography.label,
       color: semantic.buttonPrimary.text,
-      fontSize: 16,
     },
   },
   secondary: {
@@ -32,9 +31,7 @@ const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: object 
       borderColor: semantic.buttonSecondary.border,
     },
     text: {
-      ...typography.label,
       color: semantic.buttonSecondary.text,
-      fontSize: 16,
     },
   },
   ghost: {
@@ -42,9 +39,7 @@ const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: object 
       backgroundColor: semantic.buttonGhost.bg,
     },
     text: {
-      ...typography.label,
       color: semantic.buttonGhost.text,
-      fontSize: 16,
     },
   },
   destructive: {
@@ -54,9 +49,15 @@ const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: object 
       borderColor: semantic.buttonDestructive.border,
     },
     text: {
-      ...typography.label,
       color: semantic.buttonDestructive.text,
-      fontSize: 16,
+    },
+  },
+  highlight: {
+    container: {
+      backgroundColor: semantic.buttonHighlight.bg,
+    },
+    text: {
+      color: semantic.buttonHighlight.text,
     },
   },
 }
@@ -70,6 +71,7 @@ export function Button({
   style,
   ...rest
 }: ButtonProps) {
+  const { fontFamilySemiBold } = useFontContext()
   const { container, text } = variantStyles[variant]
 
   return (
@@ -88,7 +90,7 @@ export function Button({
       accessibilityLabel={title}
       {...rest}
     >
-      <Text style={[styles.text, text]}>{title}</Text>
+      <Text style={[styles.text, { fontFamily: fontFamilySemiBold }, text]}>{title}</Text>
     </Pressable>
   )
 }
@@ -100,16 +102,19 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 48,
+    minHeight: 56, // Increased for better touch targets
   },
   fullWidth: {
     width: "100%",
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.8,
   },
   disabled: {
     opacity: 0.5,
   },
-  text: {},
+  text: {
+    fontSize: typography.label.fontSize,
+    lineHeight: typography.label.lineHeight,
+  },
 })

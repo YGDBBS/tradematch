@@ -11,31 +11,59 @@ const ALLOWED_INSERT_FIELDS: (keyof QuoteInsert)[] = [
   "valid_until",
 ]
 
-// GET /api/quotes?job_id=xxx - List quotes for a job
+// GET /api/quotes - List quotes
+// ?job_id=xxx - quotes for a specific job
+// (no job_id) - all quotes for contractor's jobs
 export const GET = withAuth(async ({ userId, supabase, request }) => {
   const { searchParams } = new URL(request.url)
   const jobId = searchParams.get("job_id")
 
-  if (!jobId) {
-    return NextResponse.json({ error: "job_id is required" }, { status: 400 })
+  if (jobId) {
+    // Get quotes for a specific job
+    const { data: job, error: jobError } = await supabase
+      .from("jobs")
+      .select("id")
+      .eq("id", jobId)
+      .eq("contractor_id", userId)
+      .single()
+
+    if (jobError || !job) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 })
+    }
+
+    const { data, error } = await supabase
+      .from("quotes")
+      .select("*")
+      .eq("job_id", jobId)
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json(data)
   }
 
-  // Verify the job belongs to this contractor
-  const { data: job, error: jobError } = await supabase
+  // Get ALL quotes for all jobs belonging to this contractor
+  const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
     .select("id")
-    .eq("id", jobId)
     .eq("contractor_id", userId)
-    .single()
 
-  if (jobError || !job) {
-    return NextResponse.json({ error: "Job not found" }, { status: 404 })
+  if (jobsError) {
+    return NextResponse.json({ error: jobsError.message }, { status: 500 })
   }
+
+  if (!jobs || jobs.length === 0) {
+    return NextResponse.json([])
+  }
+
+  const jobIds = jobs.map((j) => j.id)
 
   const { data, error } = await supabase
     .from("quotes")
-    .select("*")
-    .eq("job_id", jobId)
+    .select("*, jobs(title, customer_id)")
+    .in("job_id", jobIds)
     .order("created_at", { ascending: false })
 
   if (error) {

@@ -17,6 +17,7 @@ export default tseslint.config(
       "**/ios/**",
       "**/babel.config.js",
       "**/metro.config.js",
+      "**/jest.config.js",
       "next.config.js",
     ],
   },

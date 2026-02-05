@@ -4,26 +4,45 @@ import { Pressable, View, StyleSheet } from "react-native"
 import { Text } from "./Text"
 import { colors, spacing } from "@/constants/theme"
 
+export type BackButtonColor = "navy" | "white" | "muted"
+
 export interface BackButtonProps extends Omit<PressableProps, "children"> {
   onPress: () => void
   label?: string
+  color?: BackButtonColor
+  showLabel?: boolean
 }
 
-/** Chevron left + optional "Back" label. Use in Header for navigation. */
-export function BackButton({ onPress, label = "Back", ...rest }: BackButtonProps) {
+const colorMap: Record<BackButtonColor, string> = {
+  navy: colors.navy,
+  white: colors.white,
+  muted: colors.textMuted,
+}
+
+/** Chevron left + optional label. Use in Header for navigation. */
+export function BackButton({
+  onPress,
+  label = "Back",
+  color = "navy",
+  showLabel = true,
+  ...rest
+}: BackButtonProps) {
+  const resolvedColor = colorMap[color]
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={label || "Go back"}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       {...rest}
     >
       <View style={styles.chevron}>
-        <Text style={styles.chevronText}>‹</Text>
+        <Text style={[styles.chevronText, { color: resolvedColor }]}>‹</Text>
       </View>
-      {label ? (
-        <Text variant="body" style={styles.label}>
+      {showLabel && label ? (
+        <Text variant="body" style={{ color: resolvedColor }}>
           {label}
         </Text>
       ) : null}
@@ -37,7 +56,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.sm,
     paddingRight: spacing.sm,
-    marginLeft: -spacing.sm,
+    marginLeft: -spacing.xs,
+    minHeight: 44,
   },
   pressed: {
     opacity: 0.7,
@@ -50,10 +70,6 @@ const styles = StyleSheet.create({
   chevronText: {
     fontSize: 28,
     fontWeight: "300",
-    color: colors.primary,
     lineHeight: 32,
-  },
-  label: {
-    color: colors.primary,
   },
 })

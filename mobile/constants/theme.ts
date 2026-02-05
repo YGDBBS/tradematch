@@ -1,60 +1,75 @@
 /**
- * TradeMatch design tokens – Option 1: Trust-first, professional.
- * Single source of truth: no hardcoded colours in components.
- * Use semantic.* for UI (buttons, inputs, CTAs); use colors.* only via semantic or for one-offs.
+ * TradeMatch Design System
+ * Target: UK tradespeople - clear, chunky, trustworthy UI
+ * Font: Work Sans
  */
 
 export const colors = {
-  primary: "#1e3a5f",
-  secondary: "#64748b",
-  accent: "#0d9488",
-  accentGreen: "#16a34a",
-  background: "#f8fafc",
-  surface: "#ffffff",
-  border: "#e2e8f0",
-  borderStrong: "#cbd5e1",
-  error: "#dc2626",
+  // Brand
+  navy: "#1a2e40",
+  teal: "#0891b2",
+  orange: "#ea580c",
+
+  // Functional
   success: "#16a34a",
-  /** Neutral for shadows; keep consistent with theme */
+  warning: "#d97706",
+  error: "#dc2626",
+
+  // Neutrals (Stone palette - warmer than grey)
+  background: "#f5f5f4", // stone-100
+  surface: "#ffffff",
+  border: "#d6d3d1", // stone-300
+  borderStrong: "#a8a29e", // stone-400
+  textMuted: "#78716c", // stone-500
+
+  // Utility
+  white: "#ffffff",
+  black: "#000000",
   shadow: "#000000",
 } as const
 
-/** Semantic tokens: map UI roles to colors. Buttons, CTAs, inputs use these only. */
+/** Semantic tokens for UI components */
 export const semantic = {
-  /** Primary CTA (e.g. "Get started", "Sign in", "Save") */
+  // Buttons
   buttonPrimary: {
-    bg: colors.accent,
-    text: colors.surface,
+    bg: colors.teal,
+    text: colors.white,
   },
-  /** Secondary action (e.g. "Cancel", "Sign out", "Back") */
   buttonSecondary: {
-    bg: "transparent" as const,
-    border: colors.borderStrong,
-    text: colors.primary,
+    bg: colors.surface,
+    border: colors.navy,
+    text: colors.navy,
   },
-  /** Ghost / low emphasis (e.g. "Skip", "Copy number") */
   buttonGhost: {
     bg: "transparent" as const,
-    text: colors.secondary,
+    text: colors.textMuted,
   },
-  /** Destructive (e.g. "Delete account") – reuse error for now */
   buttonDestructive: {
     bg: "transparent" as const,
     border: colors.error,
     text: colors.error,
   },
+  buttonHighlight: {
+    bg: colors.orange,
+    text: colors.white,
+  },
+
+  // Inputs
   input: {
     bg: colors.surface,
     border: colors.border,
-    text: colors.primary,
-    placeholder: colors.secondary,
+    borderFocus: colors.teal,
+    text: colors.navy,
+    placeholder: colors.textMuted,
   },
-  /** Spinner, progress */
-  loading: colors.accent,
-  /** Error message text, error state borders */
+
+  // States
+  loading: colors.teal,
   error: colors.error,
-  /** Success state, "approved" badges */
   success: colors.success,
+  warning: colors.warning,
+
+  // Surfaces
   screen: {
     background: colors.background,
   },
@@ -65,7 +80,11 @@ export const semantic = {
   },
   surface: colors.surface,
   border: colors.border,
-  textSecondary: colors.secondary,
+
+  // Text
+  textPrimary: colors.navy,
+  textSecondary: colors.textMuted,
+  textAccent: colors.teal,
 } as const
 
 export const spacing = {
@@ -74,47 +93,100 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 32,
+  xxl: 48,
 } as const
 
 export const borderRadius = {
   sm: 4,
   md: 8,
   lg: 12,
+  xl: 16,
   full: 9999,
 } as const
 
-/** Typography: one family, clear weights. */
+/** Typography scale - uses Work Sans when loaded */
 export const typography = {
+  // Font family set by FontProvider after loading
   fontFamily: undefined as string | undefined,
+  fontFamilyBold: undefined as string | undefined,
+
+  hero: {
+    fontSize: 28,
+    fontWeight: "700" as const,
+    color: colors.navy,
+    lineHeight: 34,
+  },
   title: {
     fontSize: 22,
-    fontWeight: "700" as const,
-    color: colors.primary,
+    fontWeight: "600" as const,
+    color: colors.navy,
+    lineHeight: 28,
   },
   titleSmall: {
     fontSize: 18,
     fontWeight: "600" as const,
-    color: colors.primary,
+    color: colors.navy,
+    lineHeight: 24,
   },
   body: {
     fontSize: 16,
     fontWeight: "400" as const,
-    color: colors.primary,
+    color: colors.navy,
+    lineHeight: 22,
+  },
+  bodyStrong: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    color: colors.navy,
+    lineHeight: 22,
   },
   bodySmall: {
     fontSize: 14,
     fontWeight: "400" as const,
-    color: colors.secondary,
+    color: colors.textMuted,
+    lineHeight: 20,
   },
   caption: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "400" as const,
-    color: colors.secondary,
+    color: colors.textMuted,
+    lineHeight: 18,
   },
   label: {
     fontSize: 14,
     fontWeight: "600" as const,
-    color: colors.primary,
+    color: colors.navy,
+    lineHeight: 18,
+  },
+  small: {
+    fontSize: 12,
+    fontWeight: "400" as const,
+    color: colors.textMuted,
+    lineHeight: 16,
+  },
+} as const
+
+export const shadows = {
+  sm: {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+    elevation: 5,
   },
 } as const
 
@@ -124,6 +196,7 @@ export const theme = {
   spacing,
   borderRadius,
   typography,
+  shadows,
 } as const
 
 export type Theme = typeof theme

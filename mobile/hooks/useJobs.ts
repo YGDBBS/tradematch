@@ -52,6 +52,7 @@ export function useJobs(accessToken: string | undefined) {
   return {
     jobs: query.data ?? null,
     loading: query.isLoading,
+    refreshing: query.isFetching && !query.isLoading,
     error: (query.error ?? createJob.error ?? updateJob.error ?? deleteJob.error) as Error | null,
     refetch: query.refetch,
     createJob: createJob.mutateAsync,

@@ -84,7 +84,7 @@ export default function WelcomeScreen() {
   }, [heroOpacity, heroTranslate, cardOpacity, cardTranslate, benefitAnims])
 
   return (
-    <Screen padded={false} safeAreaColor={colors.primary}>
+    <Screen padded={false} safeAreaColor={colors.navy}>
       <StatusBar barStyle="light-content" />
       <ScrollView
         style={styles.scroll}
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     marginBottom: spacing.xl,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.navy,
     marginHorizontal: -spacing.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: "100%",
     minHeight: 40,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.teal,
     borderRadius: borderRadius.full,
     marginRight: spacing.md,
   },

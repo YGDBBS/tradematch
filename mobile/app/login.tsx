@@ -1,18 +1,20 @@
 import { useState } from "react"
 import {
   View,
-  TextInput,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native"
 import { router } from "expo-router"
-import { Screen, Text, Button } from "@/components"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { Screen, Text, Button, Input } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
-import { semantic, spacing, borderRadius } from "@/constants/theme"
+import { spacing } from "@/constants/theme"
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets()
   const { signIn } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -36,69 +38,83 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen padded={false}>
+    <Screen>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
       >
-        <View style={styles.form}>
-          <Text variant="title" style={styles.title}>
-            Sign in
-          </Text>
-          <Text variant="bodySmall" style={styles.subtitle}>
-            Welcome back to TradeMatch
-          </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor={semantic.input.placeholder}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-            editable={!loading}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor={semantic.input.placeholder}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="password"
-            editable={!loading}
-          />
-
-          {error ? (
-            <Text variant="bodySmall" style={styles.error}>
-              {error}
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + spacing.xxl }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text variant="hero" style={styles.title}>
+              Welcome back
             </Text>
-          ) : null}
+            <Text variant="body" color="muted">
+              Sign in to your TradeMatch account
+            </Text>
+          </View>
 
-          <Button
-            title={loading ? "Signing in…" : "Sign in"}
-            onPress={handleSignIn}
-            disabled={loading}
-            fullWidth
-            style={styles.button}
-          />
+          {/* Form */}
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              placeholder="you@example.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              editable={!loading}
+              error={error && !email.trim() ? "Required" : undefined}
+            />
 
-          <TouchableOpacity
-            onPress={() => router.push("/signup")}
-            disabled={loading}
-            style={styles.linkWrap}
-          >
-            <Text variant="bodySmall">
-              Don’t have an account?{" "}
-              <Text variant="label" color="accent">
+            <Input
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoComplete="password"
+              editable={!loading}
+              error={error && !password ? "Required" : undefined}
+            />
+
+            {error && email.trim() && password ? (
+              <Text variant="bodySmall" color="error" style={styles.error}>
+                {error}
+              </Text>
+            ) : null}
+
+            <Button
+              title={loading ? "Signing in…" : "Sign in"}
+              onPress={handleSignIn}
+              disabled={loading}
+              fullWidth
+              style={styles.button}
+            />
+          </View>
+
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text variant="body" color="muted">
+              Don't have an account?
+            </Text>
+            <Pressable
+              onPress={() => router.push("/signup")}
+              disabled={loading}
+              style={({ pressed }) => pressed && styles.pressed}
+            >
+              <Text variant="bodyStrong" color="accent" style={styles.linkText}>
                 Sign up
               </Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
+            </Pressable>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
   )
@@ -107,38 +123,37 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: spacing.lg,
   },
-  form: {
-    width: "100%",
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  header: {
+    marginBottom: spacing.xl,
   },
   title: {
     marginBottom: spacing.xs,
   },
-  subtitle: {
-    marginBottom: spacing.lg,
-  },
-  input: {
-    height: 48,
-    borderWidth: 1,
-    borderColor: semantic.input.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    fontSize: 16,
-    color: semantic.input.text,
-    backgroundColor: semantic.input.bg,
+  form: {
+    marginBottom: spacing.xl,
   },
   error: {
-    color: semantic.error,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   button: {
     marginTop: spacing.sm,
-    marginBottom: spacing.lg,
   },
-  linkWrap: {
-    alignSelf: "center",
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  linkText: {
+    paddingVertical: spacing.xs,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 })

@@ -15,6 +15,7 @@ export const endpoints = {
     get: (id: string) => `api/customers/${id}`,
   },
   quotes: {
+    all: "api/quotes",
     list: (jobId: string) => `api/quotes?job_id=${jobId}`,
     create: "api/quotes",
     get: (id: string) => `api/quotes/${id}`,
