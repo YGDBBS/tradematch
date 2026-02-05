@@ -1,9 +1,18 @@
 import { useState } from "react"
 import { View, StyleSheet, Pressable } from "react-native"
 import { Tabs } from "expo-router"
-import { LayoutDashboard, Wrench, Plus, PoundSterling, User } from "lucide-react-native"
+import {
+  LayoutDashboard,
+  Wrench,
+  Plus,
+  PoundSterling,
+  User,
+  ClipboardList,
+} from "lucide-react-native"
 import { colors, spacing } from "@/constants/theme"
 import { QuickAddModal } from "@/components/QuickAddModal"
+import { useAuth } from "@/contexts/AuthContext"
+import { useProfile } from "@/hooks/useProfile"
 
 function TabBarIcon({
   Icon,
@@ -32,6 +41,10 @@ function AddButton({ onPress }: { onPress: () => void }) {
 
 export default function TabsLayout() {
   const [quickAddVisible, setQuickAddVisible] = useState(false)
+  const { session } = useAuth()
+  const { profile } = useProfile(session?.access_token ?? undefined)
+
+  const isCustomer = profile?.role === "customer"
 
   return (
     <>
@@ -56,6 +69,15 @@ export default function TabsLayout() {
           options={{
             title: "Jobs",
             tabBarIcon: ({ color }) => <TabBarIcon Icon={Wrench} color={color} />,
+            href: isCustomer ? null : "/jobs",
+          }}
+        />
+        <Tabs.Screen
+          name="requests"
+          options={{
+            title: "Requests",
+            tabBarIcon: ({ color }) => <TabBarIcon Icon={ClipboardList} color={color} />,
+            href: isCustomer ? "/requests" : null,
           }}
         />
         <Tabs.Screen
@@ -80,6 +102,7 @@ export default function TabsLayout() {
           options={{
             title: "Money",
             tabBarIcon: ({ color }) => <TabBarIcon Icon={PoundSterling} color={color} />,
+            href: isCustomer ? null : "/money",
           }}
         />
         <Tabs.Screen
@@ -91,7 +114,11 @@ export default function TabsLayout() {
         />
       </Tabs>
 
-      <QuickAddModal visible={quickAddVisible} onClose={() => setQuickAddVisible(false)} />
+      <QuickAddModal
+        visible={quickAddVisible}
+        onClose={() => setQuickAddVisible(false)}
+        isCustomer={isCustomer}
+      />
     </>
   )
 }

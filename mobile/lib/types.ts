@@ -18,3 +18,5 @@ export type {
   QuoteInsert,
   QuoteUpdate,
 } from "../../lib/types/quote"
+
+export type { Request, RequestStatus, RequestInsert, RequestUpdate } from "../../lib/types/request"

@@ -20,4 +20,8 @@ export const endpoints = {
     create: "api/quotes",
     get: (id: string) => `api/quotes/${id}`,
   },
+  requests: {
+    list: "api/requests",
+    get: (id: string) => `api/requests/${id}`,
+  },
 } as const

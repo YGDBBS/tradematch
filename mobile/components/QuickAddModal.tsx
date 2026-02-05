@@ -1,7 +1,7 @@
 import React from "react"
 import { View, StyleSheet, Pressable } from "react-native"
 import { router } from "expo-router"
-import { Wrench, FileText } from "lucide-react-native"
+import { Wrench, FileText, ClipboardList } from "lucide-react-native"
 import { Modal } from "./Modal"
 import { Text } from "./Text"
 import { colors, spacing, borderRadius } from "@/constants/theme"
@@ -9,6 +9,7 @@ import { colors, spacing, borderRadius } from "@/constants/theme"
 interface QuickAddModalProps {
   visible: boolean
   onClose: () => void
+  isCustomer?: boolean
 }
 
 interface ActionItemProps {
@@ -37,7 +38,7 @@ function ActionItem({ icon, title, description, onPress }: ActionItemProps) {
   )
 }
 
-export function QuickAddModal({ visible, onClose }: QuickAddModalProps) {
+export function QuickAddModal({ visible, onClose, isCustomer = false }: QuickAddModalProps) {
   const handleNewJob = () => {
     onClose()
     router.push("/jobs/new")
@@ -47,6 +48,26 @@ export function QuickAddModal({ visible, onClose }: QuickAddModalProps) {
     onClose()
     // For now, go to jobs - later this could go to a quick quote flow
     router.push("/jobs")
+  }
+
+  const handlePostJob = () => {
+    onClose()
+    router.push("/requests/new")
+  }
+
+  if (isCustomer) {
+    return (
+      <Modal visible={visible} onClose={onClose} title="Quick add">
+        <View style={styles.actions}>
+          <ActionItem
+            icon={<ClipboardList size={24} color={colors.teal} strokeWidth={2} />}
+            title="Post a job"
+            description="Find local tradespeople for your job"
+            onPress={handlePostJob}
+          />
+        </View>
+      </Modal>
+    )
   }
 
   return (
