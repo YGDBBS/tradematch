@@ -10,6 +10,7 @@ interface JobCreateInput {
   customer_id?: string | null
   status?: JobStatus
   due_date?: string | null
+  scheduled_at?: string | null
   notes?: string | null
 }
 

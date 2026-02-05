@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { TextInput, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from "react-native"
 import { router } from "expo-router"
-import { Screen, Text, Button, Header } from "@/components"
+import { Screen, Text, Button, Header, DateTimePicker } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
 import { useJobs } from "@/hooks/useJobs"
 import { semantic, spacing, borderRadius } from "@/constants/theme"
@@ -11,6 +11,7 @@ export default function NewJobScreen() {
   const { createJob, isCreating } = useJobs(session?.access_token ?? undefined)
   const [title, setTitle] = useState("")
   const [notes, setNotes] = useState("")
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleCreate = async () => {
@@ -21,7 +22,12 @@ export default function NewJobScreen() {
       return
     }
     try {
-      await createJob({ title: trimmed, notes: notes.trim() || null })
+      await createJob({
+        title: trimmed,
+        notes: notes.trim() || null,
+        scheduled_at: scheduledAt?.toISOString() ?? null,
+        status: scheduledAt ? "scheduled" : "draft",
+      })
       router.replace("/jobs")
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong")
@@ -52,6 +58,17 @@ export default function NewJobScreen() {
             onChangeText={setTitle}
             editable={!isCreating}
           />
+
+          <DateTimePicker
+            label="Schedule for (optional)"
+            value={scheduledAt}
+            onChange={setScheduledAt}
+            mode="datetime"
+            placeholder="Tap to schedule"
+            disabled={isCreating}
+            minimumDate={new Date()}
+          />
+
           <Text variant="label" style={styles.label}>
             Notes (optional)
           </Text>

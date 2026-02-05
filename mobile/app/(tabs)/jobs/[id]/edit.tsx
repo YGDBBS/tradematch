@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from "react-native"
 import { router, useLocalSearchParams } from "expo-router"
-import { Screen, Text, Button, Header } from "@/components"
+import { Screen, Text, Button, Header, DateTimePicker } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
 import { useJob } from "@/hooks/useJobs"
 import { semantic, spacing, borderRadius } from "@/constants/theme"
@@ -22,7 +22,7 @@ export default function EditJobScreen() {
   const { job, updateJob, isUpdating } = useJob(id, session?.access_token ?? undefined)
   const [title, setTitle] = useState("")
   const [status, setStatus] = useState<JobStatus>("draft")
-  const [dueDate, setDueDate] = useState("")
+  const [scheduledAt, setScheduledAt] = useState<Date | null>(null)
   const [notes, setNotes] = useState("")
   const [error, setError] = useState<string | null>(null)
 
@@ -30,10 +30,20 @@ export default function EditJobScreen() {
     if (job) {
       setTitle(job.title)
       setStatus(job.status)
-      setDueDate(job.due_date ?? "")
+      setScheduledAt(job.scheduled_at ? new Date(job.scheduled_at) : null)
       setNotes(job.notes ?? "")
     }
   }, [job])
+
+  const handleScheduleChange = (date: Date | null) => {
+    setScheduledAt(date)
+    // Auto-update status when scheduling
+    if (date && status === "draft") {
+      setStatus("scheduled")
+    } else if (!date && status === "scheduled") {
+      setStatus("draft")
+    }
+  }
 
   const handleSave = async () => {
     setError(null)
@@ -46,7 +56,7 @@ export default function EditJobScreen() {
       await updateJob({
         title: trimmed,
         status,
-        due_date: dueDate.trim() || null,
+        scheduled_at: scheduledAt?.toISOString() ?? null,
         notes: notes.trim() || null,
       })
       router.back()
@@ -81,6 +91,7 @@ export default function EditJobScreen() {
             onChangeText={setTitle}
             editable={!isUpdating}
           />
+
           <Text variant="label" style={styles.label}>
             Status
           </Text>
@@ -95,17 +106,16 @@ export default function EditJobScreen() {
               />
             ))}
           </View>
-          <Text variant="label" style={styles.label}>
-            Due date (optional)
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={semantic.input.placeholder}
-            value={dueDate}
-            onChangeText={setDueDate}
-            editable={!isUpdating}
+
+          <DateTimePicker
+            label="Scheduled for"
+            value={scheduledAt}
+            onChange={handleScheduleChange}
+            mode="datetime"
+            placeholder="Tap to schedule"
+            disabled={isUpdating}
           />
+
           <Text variant="label" style={styles.label}>
             Notes
           </Text>

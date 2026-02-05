@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   View,
   StyleSheet,
@@ -8,13 +9,16 @@ import {
 } from "react-native"
 import { router } from "expo-router"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { Calendar, AlertTriangle, ChevronRight } from "lucide-react-native"
-import { Screen, Text, Button, Card } from "@/components"
+import { Calendar, AlertTriangle, ChevronRight, List } from "lucide-react-native"
+import { Screen, Text, Button, Card, WeekCalendar } from "@/components"
 import { useAuth } from "@/contexts/AuthContext"
 import { useProfile } from "@/hooks/useProfile"
 import { useJobs } from "@/hooks/useJobs"
 import { useFinancials } from "@/hooks/useFinancials"
 import { colors, spacing, borderRadius, shadows } from "@/constants/theme"
+import type { Job } from "@/lib/types"
+
+type ViewMode = "today" | "week"
 
 function StatCard({
   value,
@@ -53,17 +57,14 @@ function StatCard({
   return content
 }
 
-function TodayJobCard({
-  time,
-  title,
-  customer,
-  onPress,
-}: {
-  time: string
-  title: string
-  customer: string
-  onPress: () => void
-}) {
+function formatJobTime(scheduledAt: string): string {
+  const date = new Date(scheduledAt)
+  return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+}
+
+function TodayJobCard({ job, onPress }: { job: Job; onPress: () => void }) {
+  const time = job.scheduled_at ? formatJobTime(job.scheduled_at) : "—"
+
   return (
     <Pressable
       onPress={onPress}
@@ -75,10 +76,10 @@ function TodayJobCard({
       </View>
       <View style={styles.todayJobContent}>
         <Text variant="body" numberOfLines={1}>
-          {title}
+          {job.title}
         </Text>
         <Text variant="caption" color="muted" numberOfLines={1}>
-          {customer}
+          {job.notes || "No notes"}
         </Text>
       </View>
       <ChevronRight size={20} color={colors.textMuted} />
@@ -118,9 +119,19 @@ function getGreeting(): string {
   return "Evening"
 }
 
+function isSameDay(d1: Date, d2: Date): boolean {
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  )
+}
+
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets()
   const { session } = useAuth()
+  const [viewMode, setViewMode] = useState<ViewMode>("today")
+
   const {
     profile,
     loading: profileLoading,
@@ -168,9 +179,11 @@ export default function DashboardScreen() {
   const moneyOwed = financialSummary.totalOwed
   const hasOverdueQuotes = financialSummary.overdueAmount > 0
 
-  // Today's jobs - filter by due_date matching today
-  const today = new Date().toISOString().split("T")[0]
-  const todaysJobs = jobs?.filter((j) => j.due_date === today) || []
+  // Today's jobs - filter by scheduled_at matching today
+  const today = new Date()
+  const todaysJobs = (jobs || [])
+    .filter((j) => j.scheduled_at && isSameDay(new Date(j.scheduled_at), today))
+    .sort((a, b) => new Date(a.scheduled_at!).getTime() - new Date(b.scheduled_at!).getTime())
 
   // Attention items from real data
   const attentionItems = [
@@ -184,6 +197,10 @@ export default function DashboardScreen() {
         ]
       : []),
   ]
+
+  const handleJobPress = (job: Job) => {
+    router.push(`/jobs/${job.id}`)
+  }
 
   return (
     <Screen>
@@ -199,10 +216,24 @@ export default function DashboardScreen() {
           />
         }
       >
-        {/* Greeting */}
-        <Text variant="hero" style={styles.greeting}>
-          {greeting}
-        </Text>
+        {/* Header with Greeting and View Toggle */}
+        <View style={styles.header}>
+          <Text variant="hero">{greeting}</Text>
+          <View style={styles.viewToggle}>
+            <Pressable
+              onPress={() => setViewMode("today")}
+              style={[styles.toggleButton, viewMode === "today" && styles.toggleButtonActive]}
+            >
+              <List size={18} color={viewMode === "today" ? colors.white : colors.navy} />
+            </Pressable>
+            <Pressable
+              onPress={() => setViewMode("week")}
+              style={[styles.toggleButton, viewMode === "week" && styles.toggleButtonActive]}
+            >
+              <Calendar size={18} color={viewMode === "week" ? colors.white : colors.navy} />
+            </Pressable>
+          </View>
+        </View>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
@@ -215,89 +246,98 @@ export default function DashboardScreen() {
           <View style={styles.statsDivider} />
           <StatCard
             value={String(jobsThisWeek)}
-            label={jobsThisWeek === 1 ? "job this week" : "jobs this week"}
+            label={jobsThisWeek === 1 ? "active job" : "active jobs"}
             onPress={() => router.push("/jobs")}
           />
         </View>
 
-        {/* Today Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Calendar size={20} color={colors.navy} strokeWidth={2} />
-            <Text variant="titleSmall" style={styles.sectionTitle}>
-              Today
-            </Text>
-          </View>
+        {viewMode === "today" ? (
+          <>
+            {/* Today Section */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Calendar size={20} color={colors.navy} strokeWidth={2} />
+                <Text variant="titleSmall" style={styles.sectionTitle}>
+                  Today
+                </Text>
+                {todaysJobs.length > 0 && (
+                  <Text variant="caption" color="muted" style={styles.jobCount}>
+                    {todaysJobs.length} {todaysJobs.length === 1 ? "job" : "jobs"}
+                  </Text>
+                )}
+              </View>
 
-          {todaysJobs.length > 0 ? (
-            <Card style={styles.todayCard}>
-              {todaysJobs.map((job, index) => (
-                <View key={job.id}>
-                  {index > 0 && <View style={styles.jobDivider} />}
-                  <TodayJobCard
-                    time="9:00am"
-                    title={job.title}
-                    customer={job.customer_id || "No customer"}
-                    onPress={() => router.push(`/jobs/${job.id}`)}
+              {todaysJobs.length > 0 ? (
+                <Card style={styles.todayCard}>
+                  {todaysJobs.map((job, index) => (
+                    <View key={job.id}>
+                      {index > 0 && <View style={styles.jobDivider} />}
+                      <TodayJobCard job={job} onPress={() => handleJobPress(job)} />
+                    </View>
+                  ))}
+                </Card>
+              ) : (
+                <Card style={styles.emptyCard}>
+                  <Text variant="body" color="muted" align="center">
+                    No jobs scheduled for today
+                  </Text>
+                  <Button
+                    title="Add a job"
+                    variant="ghost"
+                    onPress={() => router.push("/jobs/new")}
+                    style={styles.emptyButton}
                   />
-                </View>
-              ))}
-            </Card>
-          ) : (
-            <Card style={styles.emptyCard}>
-              <Text variant="body" color="muted" align="center">
-                No jobs scheduled for today
-              </Text>
-              <Button
-                title="View all jobs"
-                variant="ghost"
-                onPress={() => router.push("/jobs")}
-                style={styles.emptyButton}
-              />
-            </Card>
-          )}
-        </View>
-
-        {/* Needs Attention Section */}
-        {attentionItems.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <AlertTriangle size={20} color={colors.warning} strokeWidth={2} />
-              <Text variant="titleSmall" style={styles.sectionTitle}>
-                Needs attention
-              </Text>
+                </Card>
+              )}
             </View>
 
-            <Card style={styles.attentionCard}>
-              {attentionItems.map((item, index) => (
-                <View key={item.id}>
-                  {index > 0 && <View style={styles.jobDivider} />}
-                  <AttentionItem
-                    message={item.message}
-                    type={item.type}
-                    onPress={() => router.push("/money")}
-                  />
+            {/* Needs Attention Section */}
+            {attentionItems.length > 0 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <AlertTriangle size={20} color={colors.warning} strokeWidth={2} />
+                  <Text variant="titleSmall" style={styles.sectionTitle}>
+                    Needs attention
+                  </Text>
                 </View>
-              ))}
-            </Card>
+
+                <Card style={styles.attentionCard}>
+                  {attentionItems.map((item, index) => (
+                    <View key={item.id}>
+                      {index > 0 && <View style={styles.jobDivider} />}
+                      <AttentionItem
+                        message={item.message}
+                        type={item.type}
+                        onPress={() => router.push("/money")}
+                      />
+                    </View>
+                  ))}
+                </Card>
+              </View>
+            )}
+
+            {/* Quick Actions */}
+            <View style={styles.quickActions}>
+              <Button
+                title="View all jobs"
+                variant="secondary"
+                onPress={() => router.push("/jobs")}
+                style={styles.quickActionButton}
+              />
+              <Button
+                title="New job"
+                variant="primary"
+                onPress={() => router.push("/jobs/new")}
+                style={styles.quickActionButton}
+              />
+            </View>
+          </>
+        ) : (
+          /* Week Calendar View */
+          <View style={styles.calendarContainer}>
+            <WeekCalendar jobs={jobs || []} onJobPress={handleJobPress} />
           </View>
         )}
-
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <Button
-            title="View all jobs"
-            variant="secondary"
-            onPress={() => router.push("/jobs")}
-            style={styles.quickActionButton}
-          />
-          <Button
-            title="New quote"
-            variant="primary"
-            onPress={() => router.push("/jobs/new")}
-            style={styles.quickActionButton}
-          />
-        </View>
       </ScrollView>
     </Screen>
   )
@@ -316,8 +356,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xl,
   },
-  greeting: {
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: spacing.lg,
+  },
+  viewToggle: {
+    flexDirection: "row",
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  toggleButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  toggleButtonActive: {
+    backgroundColor: colors.teal,
   },
   statsRow: {
     flexDirection: "row",
@@ -348,6 +407,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   sectionTitle: {
+    marginLeft: spacing.sm,
+    flex: 1,
+  },
+  jobCount: {
     marginLeft: spacing.sm,
   },
   todayCard: {
@@ -398,5 +461,9 @@ const styles = StyleSheet.create({
   },
   quickActionButton: {
     flex: 1,
+  },
+  calendarContainer: {
+    flex: 1,
+    minHeight: 400,
   },
 })
