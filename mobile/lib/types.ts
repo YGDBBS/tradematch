@@ -10,3 +10,11 @@ export type { Profile, ProfileRole, ProfileUpdate, BusinessType } from "../../li
 export type { Job, JobStatus, JobInsert, JobUpdate } from "../../lib/types/job"
 
 export type { Customer, CustomerInsert, CustomerUpdate } from "../../lib/types/customer"
+
+export type {
+  Quote,
+  QuoteStatus,
+  QuoteLineItem,
+  QuoteInsert,
+  QuoteUpdate,
+} from "../../lib/types/quote"

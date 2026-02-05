@@ -6,3 +6,4 @@
 export * from "./profile"
 export * from "./job"
 export * from "./customer"
+export * from "./quote"
