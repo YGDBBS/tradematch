@@ -67,13 +67,16 @@ export const GET = withAuth(async ({ userId, supabase }) => {
 
   // Format customer conversations
   const customerConversations = (customerRequests || []).map((req) => {
-    const match = Array.isArray(req.request_matches) ? req.request_matches[0] : req.request_matches
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const matches = req.request_matches as any
+    const match = Array.isArray(matches) ? matches[0] : matches
+    const contractor = Array.isArray(match?.contractor) ? match.contractor[0] : match?.contractor
     return {
       request_id: req.id,
       title: req.title,
       status: req.status,
       created_at: req.created_at,
-      other_party: match?.contractor || null,
+      other_party: contractor || null,
       role: "customer" as const,
     }
   })
@@ -82,20 +85,17 @@ export const GET = withAuth(async ({ userId, supabase }) => {
   const contractorConversations = (contractorMatches || [])
     .filter((m) => m.request)
     .map((match) => {
-      const req = match.request as {
-        id: string
-        title: string
-        status: string
-        created_at: string
-        customer_id: string
-        customer: { id: string; full_name: string | null; role: string }
-      }
+      // Supabase may return as array or single object depending on relationship
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const reqData = match.request as any
+      const req = Array.isArray(reqData) ? reqData[0] : reqData
+      const customer = Array.isArray(req?.customer) ? req.customer[0] : req?.customer
       return {
-        request_id: req.id,
-        title: req.title,
-        status: req.status,
-        created_at: req.created_at,
-        other_party: req.customer || null,
+        request_id: req?.id as string,
+        title: req?.title as string,
+        status: req?.status as string,
+        created_at: req?.created_at as string,
+        other_party: customer || null,
         role: "contractor" as const,
       }
     })
