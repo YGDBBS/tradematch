@@ -97,14 +97,28 @@ export function useRequest(id: string | undefined, accessToken: string | undefin
     },
   })
 
+  const matchRequest = useMutation({
+    mutationFn: () =>
+      api.post<{ matched: number; message: string }>(
+        endpoints.requests.match(id!),
+        {},
+        accessToken!
+      ),
+  })
+
   return {
     request: query.data ?? null,
     loading: query.isLoading,
-    error: (query.error ?? updateRequest.error ?? deleteRequest.error) as Error | null,
+    error: (query.error ??
+      updateRequest.error ??
+      deleteRequest.error ??
+      matchRequest.error) as Error | null,
     refetch: query.refetch,
     updateRequest: updateRequest.mutateAsync,
     isUpdating: updateRequest.isPending,
     deleteRequest: deleteRequest.mutateAsync,
     isDeleting: deleteRequest.isPending,
+    matchRequest: matchRequest.mutateAsync,
+    isMatching: matchRequest.isPending,
   }
 }

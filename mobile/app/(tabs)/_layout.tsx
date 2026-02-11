@@ -8,6 +8,7 @@ import {
   PoundSterling,
   User,
   ClipboardList,
+  Inbox,
 } from "lucide-react-native"
 import { colors, spacing } from "@/constants/theme"
 import { QuickAddModal } from "@/components/QuickAddModal"
@@ -78,6 +79,14 @@ export default function TabsLayout() {
             title: "Requests",
             tabBarIcon: ({ color }) => <TabBarIcon Icon={ClipboardList} color={color} />,
             href: isCustomer ? "/requests" : null,
+          }}
+        />
+        <Tabs.Screen
+          name="leads"
+          options={{
+            title: "Leads",
+            tabBarIcon: ({ color }) => <TabBarIcon Icon={Inbox} color={color} />,
+            href: isCustomer ? null : "/leads",
           }}
         />
         <Tabs.Screen

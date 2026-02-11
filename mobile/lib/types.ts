@@ -20,3 +20,10 @@ export type {
 } from "../../lib/types/quote"
 
 export type { Request, RequestStatus, RequestInsert, RequestUpdate } from "../../lib/types/request"
+
+export type {
+  RequestMatch,
+  RequestMatchStatus,
+  RequestMatchWithRequest,
+  RequestMatchUpdate,
+} from "../../lib/types/requestMatch"
