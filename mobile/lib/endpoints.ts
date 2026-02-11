@@ -24,9 +24,13 @@ export const endpoints = {
     list: "api/requests",
     get: (id: string) => `api/requests/${id}`,
     match: (id: string) => `api/requests/${id}/match`,
+    messages: (id: string) => `api/requests/${id}/messages`,
   },
   leads: {
     list: "api/leads",
     get: (id: string) => `api/leads/${id}`,
+  },
+  conversations: {
+    list: "api/conversations",
   },
 } as const

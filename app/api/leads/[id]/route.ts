@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 import type { AuthContext } from "@/lib/api/withAuth"
 import { withAuth } from "@/lib/api/withAuth"
+import { createServiceRoleClient } from "@/lib/supabase/server"
 import type { RequestMatchUpdate } from "@/lib/types/requestMatch"
 
 type RouteParams = { params: Promise<{ id: string }> }
@@ -122,6 +123,19 @@ export const PATCH = (request: NextRequest, { params }: RouteParams) =>
         return NextResponse.json({ error: "Lead not found" }, { status: 404 })
       }
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // When contractor accepts, update request status to "assigned"
+    if (body.status === "accepted" && data.request_id) {
+      try {
+        const adminClient = createServiceRoleClient()
+        await adminClient
+          .from("requests")
+          .update({ status: "assigned", updated_at: new Date().toISOString() })
+          .eq("id", data.request_id)
+      } catch (e) {
+        console.error("Failed to update request status:", e)
+      }
     }
 
     return NextResponse.json(data)
