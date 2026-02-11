@@ -58,18 +58,25 @@ export const POST = withAuth(async ({ userId, supabase, request }) => {
     try {
       const adminClient = createServiceRoleClient()
 
-      // Find contractors with matching trade
+      // Find contractors with matching trade (case-insensitive)
+      // If no trade specified, match all contractors with any trade
       let contractorQuery = adminClient
         .from("profiles")
-        .select("id")
+        .select("id, trade")
         .eq("role", "contractor")
-        .not("trade", "is", null)
 
       if (data.trade) {
+        // Case-insensitive partial match
         contractorQuery = contractorQuery.ilike("trade", `%${data.trade}%`)
+      } else {
+        // If no trade specified, get contractors who have a trade set
+        contractorQuery = contractorQuery.not("trade", "is", null)
       }
 
-      const { data: contractors } = await contractorQuery.limit(MAX_MATCHES)
+      const { data: contractors, error: contractorError } = await contractorQuery.limit(MAX_MATCHES)
+
+      console.log("Matching request:", data.id, "trade:", data.trade)
+      console.log("Found contractors:", contractors?.length, contractorError?.message)
 
       if (contractors && contractors.length > 0) {
         const matches = contractors.map((c) => ({
@@ -77,11 +84,15 @@ export const POST = withAuth(async ({ userId, supabase, request }) => {
           contractor_id: c.id,
           status: "pending",
         }))
-        await adminClient.from("request_matches").insert(matches)
+        const { error: matchError } = await adminClient.from("request_matches").insert(matches)
+        if (matchError) {
+          console.error("Failed to insert matches:", matchError.message)
+        } else {
+          console.log("Created", matches.length, "matches")
+        }
       }
-    } catch {
-      // Matching failure shouldn't fail the request creation
-      console.error("Failed to auto-match request")
+    } catch (e) {
+      console.error("Failed to auto-match request:", e)
     }
   }
 
