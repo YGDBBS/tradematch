@@ -22,21 +22,7 @@ export const GET = (request: NextRequest, { params }: RouteParams) =>
 
     let query = supabase
       .from("messages")
-      .select(
-        `
-        id,
-        request_id,
-        sender_id,
-        body,
-        attachment_url,
-        created_at,
-        sender:profiles!sender_id (
-          id,
-          full_name,
-          role
-        )
-      `
-      )
+      .select("id, request_id, sender_id, body, attachment_url, created_at")
       .eq("request_id", requestId)
       .order("created_at", { ascending: false })
       .limit(limit)
@@ -51,8 +37,28 @@ export const GET = (request: NextRequest, { params }: RouteParams) =>
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Reverse to return oldest-first for chat display
-    const messages = (data || []).reverse()
+    // Collect unique sender IDs and fetch profiles separately
+    const senderIds = Array.from(new Set((data || []).map((m) => m.sender_id)))
+    let profilesMap: Record<string, { id: string; full_name: string | null; role: string }> = {}
+
+    if (senderIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, role")
+        .in("id", senderIds)
+
+      if (profiles) {
+        profilesMap = Object.fromEntries(profiles.map((p) => [p.id, p]))
+      }
+    }
+
+    // Attach sender info to messages and reverse for oldest-first
+    const messages = (data || [])
+      .map((m) => ({
+        ...m,
+        sender: profilesMap[m.sender_id] || null,
+      }))
+      .reverse()
 
     return NextResponse.json({
       messages,
@@ -92,21 +98,7 @@ export const POST = (request: NextRequest, { params }: RouteParams) =>
     const { data, error } = await supabase
       .from("messages")
       .insert(insert)
-      .select(
-        `
-        id,
-        request_id,
-        sender_id,
-        body,
-        attachment_url,
-        created_at,
-        sender:profiles!sender_id (
-          id,
-          full_name,
-          role
-        )
-      `
-      )
+      .select("id, request_id, sender_id, body, attachment_url, created_at")
       .single()
 
     if (error) {
@@ -120,5 +112,18 @@ export const POST = (request: NextRequest, { params }: RouteParams) =>
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json(data, { status: 201 })
+    // Fetch sender profile
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .eq("id", userId)
+      .single()
+
+    return NextResponse.json(
+      {
+        ...data,
+        sender: profile || null,
+      },
+      { status: 201 }
+    )
   })(request)

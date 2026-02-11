@@ -4,10 +4,9 @@ import { withAuth } from "@/lib/api/withAuth"
 /**
  * GET /api/conversations
  * Get all requests the user can message on (as customer or accepted contractor).
- * Returns requests with the other party's info and last message preview.
  */
 export const GET = withAuth(async ({ userId, supabase }) => {
-  // Get requests where user is customer
+  // Get requests where user is customer with accepted matches
   const { data: customerRequests, error: customerError } = await supabase
     .from("requests")
     .select(
@@ -19,12 +18,7 @@ export const GET = withAuth(async ({ userId, supabase }) => {
       customer_id,
       request_matches!inner (
         contractor_id,
-        status,
-        contractor:profiles!contractor_id (
-          id,
-          full_name,
-          role
-        )
+        status
       )
     `
     )
@@ -49,12 +43,7 @@ export const GET = withAuth(async ({ userId, supabase }) => {
         title,
         status,
         created_at,
-        customer_id,
-        customer:profiles!customer_id (
-          id,
-          full_name,
-          role
-        )
+        customer_id
       )
     `
     )
@@ -65,12 +54,50 @@ export const GET = withAuth(async ({ userId, supabase }) => {
     return NextResponse.json({ error: contractorError.message }, { status: 500 })
   }
 
+  // Collect all profile IDs we need to fetch
+  const profileIds = new Set<string>()
+
+  // From customer requests, get contractor IDs
+  for (const req of customerRequests || []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const matches = req.request_matches as any
+    const match = Array.isArray(matches) ? matches[0] : matches
+    if (match?.contractor_id) {
+      profileIds.add(match.contractor_id)
+    }
+  }
+
+  // From contractor matches, get customer IDs
+  for (const match of contractorMatches || []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reqData = match.request as any
+    const req = Array.isArray(reqData) ? reqData[0] : reqData
+    if (req?.customer_id) {
+      profileIds.add(req.customer_id)
+    }
+  }
+
+  // Fetch all needed profiles in one query
+  const profileIdArray = Array.from(profileIds)
+  let profilesMap: Record<string, { id: string; full_name: string | null; role: string }> = {}
+
+  if (profileIdArray.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .in("id", profileIdArray)
+
+    if (profiles) {
+      profilesMap = Object.fromEntries(profiles.map((p) => [p.id, p]))
+    }
+  }
+
   // Format customer conversations
   const customerConversations = (customerRequests || []).map((req) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const matches = req.request_matches as any
     const match = Array.isArray(matches) ? matches[0] : matches
-    const contractor = Array.isArray(match?.contractor) ? match.contractor[0] : match?.contractor
+    const contractor = match?.contractor_id ? profilesMap[match.contractor_id] : null
     return {
       request_id: req.id,
       title: req.title,
@@ -85,11 +112,10 @@ export const GET = withAuth(async ({ userId, supabase }) => {
   const contractorConversations = (contractorMatches || [])
     .filter((m) => m.request)
     .map((match) => {
-      // Supabase may return as array or single object depending on relationship
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const reqData = match.request as any
       const req = Array.isArray(reqData) ? reqData[0] : reqData
-      const customer = Array.isArray(req?.customer) ? req.customer[0] : req?.customer
+      const customer = req?.customer_id ? profilesMap[req.customer_id] : null
       return {
         request_id: req?.id as string,
         title: req?.title as string,
