@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
+import { queryClient } from "./QueryProvider"
 
 interface AuthState {
   session: Session | null
@@ -33,9 +34,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState({ session: null, loading: false })
       })
 
+    let previousUserId: string | undefined
+
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange((_event, session) => {
+    } = client.auth.onAuthStateChange((event, session) => {
+      const currentUserId = session?.user?.id
+
+      // Clear cache when user signs out or switches to a different account
+      if (event === "SIGNED_OUT") {
+        queryClient.clear()
+      } else if (event === "SIGNED_IN" && previousUserId && previousUserId !== currentUserId) {
+        // Different user signed in - clear previous user's cached data
+        queryClient.clear()
+      }
+
+      previousUserId = currentUserId
       setState((prev) => ({ ...prev, session }))
     })
 
@@ -58,7 +72,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     const client = supabase
-    if (client) await client.auth.signOut()
+    if (client) {
+      await client.auth.signOut()
+      // Clear all cached data from previous user
+      queryClient.clear()
+    }
   }
 
   const value: AuthContextValue = {
